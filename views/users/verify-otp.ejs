@@ -1,0 +1,26 @@
+<% layout("layouts/boilerplate") %>
+    <div class="row mt-3">
+        <h1 class="col-6 offset-5">Verify your email</h1>
+        <div class="col-6 offset-3">
+            <p>We've sent a 6-digit code to <b><%= email %></b>. Enter it below to activate your account.</p>
+            <form action="/verify-otp" method="POST" class="needs-validation" novalidate>
+                <input type="hidden" name="email" value="<%= email %>">
+                <div class="mb-3">
+                  <label for="otp" class="form-label">Verification code</label>
+                    <input
+                        name="otp"
+                        id="otp"
+                        type="text"
+                        maxlength="6"
+                        pattern="[0-9]{6}"
+                        class="form-control"
+                        placeholder="123456"
+                        required
+                    >
+                </div>
+                <button class="btn btn-success">Verify</button>
+            </form>
+            <br>
+            <a href="/resend-otp?email=<%= encodeURIComponent(email) %>&purpose=signup">Didn't get a code? Resend it</a>
+        </div>
+    </div>
