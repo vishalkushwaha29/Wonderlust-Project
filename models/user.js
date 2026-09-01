@@ -11,6 +11,20 @@ const userSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  avatar: {
+    url: {
+      type: String,
+      default: "",
+    },
+    filename: String,
+  },
+});
+
+userSchema.virtual("avatarUrl").get(function () {
+  if (this.avatar && this.avatar.url) {
+    return this.avatar.url;
+  }
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.username)}&background=fe424d&color=fff`;
 });
 
 userSchema.plugin(passportLocalMongoose);

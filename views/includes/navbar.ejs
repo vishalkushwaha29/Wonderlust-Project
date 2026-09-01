@@ -32,6 +32,13 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+  }
+  .profile-btn img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
   .profile-btn:hover{
     opacity: 0.9;
@@ -91,15 +98,21 @@
 
 <div id="drawer-backdrop"></div>
 <div id="profile-drawer">
-    <div class="drawer-header">
-    <div>
-      <h5 class="mb-0">
-        <% if(currUser){ %>@<%= currUser.username %><% } %>
-      </h5>
-      <small class="text-muted"><% if(currUser){ %><%= currUser.email %><% } %></small>
+  <div class="drawer-header">
+    <div class="d-flex align-items-center">
+      <% if(currUser){ %>
+        <img src="<%= currUser.avatarUrl %>" alt="avatar" style="width: 3rem; height: 3rem; border-radius: 50%; object-fit: cover; margin-right: 0.75rem;">
+      <% } %>
+      <div>
+        <h5 class="mb-0">
+          <% if(currUser){ %>@<%= currUser.username %><% } %>
+        </h5>
+        <small class="text-muted"><% if(currUser){ %><%= currUser.email %><% } %></small>
+      </div>
     </div>
     <button id="drawer-close" class="btn-close" aria-label="Close"></button>
   </div>
+  <a href="/profile" class="drawer-link"><i class="fa-solid fa-circle-user"></i>&nbsp; My Profile</a>
   <a href="/listings/new" class="drawer-link"><i class="fa-solid fa-house"></i>&nbsp; Airbnb your home</a>
   <a href="/change-password" class="drawer-link"><i class="fa-solid fa-key"></i>&nbsp; Change Password</a>
   <div class="theme-toggle-row">
@@ -133,14 +146,14 @@
         </form>
       </div>
 
-            <div class="navbar-nav ms-auto">
+      <div class="navbar-nav ms-auto">
         <% if(!currUser){  %>
                <a class="nav-link" href="/listings/new">Airbnb your home</a>
                <a class="nav-link" href="/signup"><b>Sign up</b></a>
                <a class="nav-link" href="/login"><b>Log in</b></a>
           <% }else{  %>
                <button id="profile-btn" class="profile-btn" type="button" aria-label="Profile menu">
-                  <i class="fa-solid fa-user"></i>
+                  <img src="<%= currUser.avatarUrl %>" alt="profile">
                </button>
              <%  } %>
       </div>

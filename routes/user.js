@@ -7,6 +7,9 @@ const ExpressError = require("../utils/ExpressError.js");
 const passport = require("passport");
 const { saveRedirectUrl, isLoggedIn } = require("../middleware.js");
 const { generateOtp, sendOtpEmail } = require("../utils/sendEmail.js");
+const multer = require("multer");
+const { storage } = require("../cloudConfig.js");
+const upload = multer({ storage });
 
 router.get("/signup", (req, res) => {
   res.render("users/signup.ejs");
@@ -19,6 +22,9 @@ router.post(
     try {
       let { username, email, password } = req.body;
 
+      // If a previous signup attempt left behind an unverified account
+      // with this username/email (e.g. because the OTP email failed to
+      // send), clean it up so this attempt isn't blocked by it.
       const stale = await User.findOne({ $or: [{ username }, { email }] });
       if (stale && !stale.isVerified) {
         await User.deleteOne({ _id: stale._id });
@@ -33,8 +39,13 @@ router.post(
       await sendOtpEmail(email, otp, "signup");
 
       req.flash("success", "We've sent a verification code to your email.");
-      res.redirect(`/verify-otp?email=${encodeURIComponent(email)}`);
+      return req.session.save(() =>
+        res.redirect(`/verify-otp?email=${encodeURIComponent(email)}`),
+      );
     } catch (e) {
+      // If the account was created but something failed afterward
+      // (e.g. sending the OTP email), roll it back so the
+      // username/email aren't stuck as "already registered".
       if (registeredUser) {
         await User.deleteOne({ _id: registeredUser._id });
         await Otp.deleteMany({
@@ -43,11 +54,12 @@ router.post(
         });
       }
       req.flash("error", e.message);
-      res.redirect("/signup");
+      return req.session.save(() => res.redirect("/signup"));
     }
   }),
 );
 
+// Show OTP verification page (used right after signup)
 router.get("/verify-otp", (req, res) => {
   const { email } = req.query;
   if (!email) {
@@ -68,17 +80,20 @@ router.post(
         "error",
         "That code is invalid or has expired. Please try again.",
       );
-      return res.redirect(`/verify-otp?email=${encodeURIComponent(email)}`);
+      return req.session.save(() =>
+        res.redirect(`/verify-otp?email=${encodeURIComponent(email)}`),
+      );
     }
 
     await User.updateOne({ email }, { isVerified: true });
     await Otp.deleteMany({ email, purpose: "signup" });
 
     req.flash("success", "Email verified! You can now log in.");
-    res.redirect("/login");
+    return req.session.save(() => res.redirect("/login"));
   }),
 );
 
+// Resend a verification code — works for both signup and password-reset flows
 router.get(
   "/resend-otp",
   wrapAsync(async (req, res) => {
@@ -89,18 +104,20 @@ router.get(
 
     if (!email) {
       req.flash("error", "Missing email.");
-      return res.redirect(fallbackPage);
+      return req.session.save(() => res.redirect(fallbackPage));
     }
 
     const user = await User.findOne({ email });
     if (!user) {
       req.flash("error", "No account found for that email.");
-      return res.redirect(fallbackPage);
+      return req.session.save(() => res.redirect(fallbackPage));
     }
 
+    // Only the signup flow cares about isVerified — a reset request should
+    // always be allowed to resend, regardless of verification status.
     if (validPurpose === "signup" && user.isVerified) {
       req.flash("success", "This account is already verified — please log in.");
-      return res.redirect("/login");
+      return req.session.save(() => res.redirect("/login"));
     }
 
     await Otp.deleteMany({ email, purpose: validPurpose });
@@ -120,7 +137,9 @@ router.get(
 
     const redirectPage =
       validPurpose === "reset" ? "/reset-password" : "/verify-otp";
-    res.redirect(`${redirectPage}?email=${encodeURIComponent(email)}`);
+    return req.session.save(() =>
+      res.redirect(`${redirectPage}?email=${encodeURIComponent(email)}`),
+    );
   }),
 );
 
@@ -139,7 +158,7 @@ router.post("/login", saveRedirectUrl, (req, res, next) => {
         "error",
         info && info.message ? info.message : "Incorrect username or password.",
       );
-      return res.redirect("/login");
+      return req.session.save(() => res.redirect("/login"));
     }
 
     req.logIn(
@@ -155,6 +174,8 @@ router.post("/login", saveRedirectUrl, (req, res, next) => {
             if (err) return console.log(err);
           });
 
+          // Send a fresh OTP right now, since any earlier signup OTP may
+          // have expired or never arrived.
           await Otp.deleteMany({ email, purpose: "signup" });
           const otp = generateOtp();
           await Otp.create({ email, otp, purpose: "signup" });
@@ -173,12 +194,14 @@ router.post("/login", saveRedirectUrl, (req, res, next) => {
             );
           }
 
-          return res.redirect(`/verify-otp?email=${encodeURIComponent(email)}`);
+          return req.session.save(() =>
+            res.redirect(`/verify-otp?email=${encodeURIComponent(email)}`),
+          );
         }
 
         req.flash("success", "Welcome back to Wanderlust");
         let redirectUrl = res.locals.redirectUrl || "/listings";
-        res.redirect(redirectUrl);
+        return req.session.save(() => res.redirect(redirectUrl));
       }),
     );
   })(req, res, next);
@@ -190,10 +213,11 @@ router.get("/logout", (req, res, next) => {
       return next(err);
     }
     req.flash("success", "You are successfully logged out");
-    res.redirect("/listings");
+    return req.session.save(() => res.redirect("/listings"));
   });
 });
 
+// Forgot password — request an OTP
 router.get("/forgot-password", (req, res) => {
   res.render("users/forgot-password.ejs");
 });
@@ -215,11 +239,15 @@ router.post(
       }
     }
 
+    // Same message whether or not the account exists, so we don't reveal
+    // which emails are registered.
     req.flash(
       "success",
       "If that email is registered, a reset code has been sent.",
     );
-    res.redirect(`/reset-password?email=${encodeURIComponent(email)}`);
+    return req.session.save(() =>
+      res.redirect(`/reset-password?email=${encodeURIComponent(email)}`),
+    );
   }),
 );
 
@@ -239,7 +267,9 @@ router.post(
 
     if (newPassword !== confirmPassword) {
       req.flash("error", "Passwords do not match.");
-      return res.redirect(`/reset-password?email=${encodeURIComponent(email)}`);
+      return req.session.save(() =>
+        res.redirect(`/reset-password?email=${encodeURIComponent(email)}`),
+      );
     }
 
     const otpDoc = await Otp.findOne({ email, otp, purpose: "reset" });
@@ -248,13 +278,15 @@ router.post(
         "error",
         "That code is invalid or has expired. Please try again.",
       );
-      return res.redirect(`/reset-password?email=${encodeURIComponent(email)}`);
+      return req.session.save(() =>
+        res.redirect(`/reset-password?email=${encodeURIComponent(email)}`),
+      );
     }
 
     const user = await User.findOne({ email });
     if (!user) {
       req.flash("error", "No account found for that email.");
-      return res.redirect("/forgot-password");
+      return req.session.save(() => res.redirect("/forgot-password"));
     }
 
     await new Promise((resolve, reject) => {
@@ -267,10 +299,11 @@ router.post(
     await Otp.deleteMany({ email, purpose: "reset" });
 
     req.flash("success", "Password reset successfully! Please log in.");
-    res.redirect("/login");
+    return req.session.save(() => res.redirect("/login"));
   }),
 );
 
+// Change password — for a logged-in user, verifying their current password
 router.get("/change-password", isLoggedIn, (req, res) => {
   res.render("users/change-password.ejs");
 });
@@ -283,7 +316,7 @@ router.post(
 
     if (newPassword !== confirmPassword) {
       req.flash("error", "New passwords do not match.");
-      return res.redirect("/change-password");
+      return req.session.save(() => res.redirect("/change-password"));
     }
 
     await new Promise((resolve, reject) => {
@@ -296,7 +329,27 @@ router.post(
     });
 
     req.flash("success", "Password changed successfully!");
-    res.redirect("/listings");
+    return req.session.save(() => res.redirect("/listings"));
+  }),
+);
+
+// Profile — view and update profile picture
+router.get("/profile", isLoggedIn, (req, res) => {
+  res.render("users/profile.ejs");
+});
+
+router.post(
+  "/profile",
+  isLoggedIn,
+  upload.single("avatar"),
+  wrapAsync(async (req, res) => {
+    if (req.file) {
+      const url = req.file.path;
+      const filename = req.file.filename;
+      await User.findByIdAndUpdate(req.user._id, { avatar: { url, filename } });
+    }
+    req.flash("success", "Profile picture updated!");
+    return req.session.save(() => res.redirect("/profile"));
   }),
 );
 
