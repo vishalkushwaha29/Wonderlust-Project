@@ -36,7 +36,91 @@
     align-items: center;
     margin-top: 1rem;
   }
+
+  /* Popular destinations rail */
+  .destinations-rail{
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+  .destination-card{
+    position: relative;
+    flex: 0 0 auto;
+    width: 10rem;
+    height: 7rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    color: #fff;
+    text-decoration: none;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: flex-end;
+    box-shadow: inset 0 -3rem 2rem -1rem rgba(0,0,0,0.6);
+  }
+  .destination-card:hover{
+    opacity: 0.9;
+  }
+  .destination-card .dest-info{
+    padding: 0.5rem;
+  }
+  .destination-card .dest-info b{
+    font-size: 0.95rem;
+  }
+  .destination-card .dest-info small{
+    display: block;
+    opacity: 0.85;
+  }
+
+  /* Favorite heart icon */
+  .listing-card-wrap{
+    position: relative;
+  }
+  .favorite-heart{
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    z-index: 5;
+    background: rgba(0,0,0,0.35);
+    border: none;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .favorite-heart i{
+    color: #fff;
+    font-size: 1.05rem;
+  }
+  .favorite-heart.favorited i{
+    color: #fe424d;
+    font-weight: 900;
+  }
+  .guests-hint{
+    color: #6c757d;
+    font-size: 0.85rem;
+  }
 </style>
+
+  <% if(popularDestinations && popularDestinations.length > 0){ %>
+    <h5 class="mt-3">Popular destinations</h5>
+    <div class="destinations-rail">
+      <% for(let dest of popularDestinations){ %>
+        <a href="/listings?destination=<%= encodeURIComponent(dest._id) %>"
+           class="destination-card"
+           style="background-image: url('<%= dest.image %>');">
+          <div class="dest-info">
+            <b><%= dest._id %></b>
+            <small><%= dest.count %> stay<%= dest.count > 1 ? "s" : "" %></small>
+          </div>
+        </a>
+      <% } %>
+    </div>
+  <% } %>
 
   <div id="filters">
     <div class="filter <%= category === 'Trending' ? 'active' : '' %>" data-category="Trending">
@@ -99,22 +183,32 @@
 
   <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
     <% for(let listing of allListings){ %>
-      <a href="/listings/<%= listing._id %>" class="listing-link">
-        <div class="card col">
-          <img src="<%= listing.image.url %>"
-               class="card-img-top"
-               alt="listing_image"
-               style="width: 20rem; height: 20rem;" />
-          <div class="card-img-overlay"></div>
-          <div class="card-body">
-            <p class="card-text">
-              <b><%= listing.title %></b> <br>
-              &#8377 <%= listing.price.toLocaleString("en-IN") %>/night
-              <i class="tax-info">&nbsp; &nbsp; +18% GST</i>
-            </p>
-          </div>
+      <div class="col">
+        <div class="listing-card-wrap">
+          <button class="favorite-heart <%= favoriteIds && favoriteIds.includes(listing._id.toString()) ? 'favorited' : '' %>"
+                  data-listing-id="<%= listing._id %>" aria-label="Toggle favorite">
+            <i class="fa-solid fa-heart"></i>
+          </button>
+          <a href="/listings/<%= listing._id %>" class="listing-link">
+            <div class="card">
+              <img src="<%= listing.image.url %>"
+                   class="card-img-top"
+                   alt="listing_image"
+                   style="width: 20rem; height: 20rem;" />
+              <div class="card-img-overlay"></div>
+              <div class="card-body">
+                <p class="card-text">
+                  <b><%= listing.title %></b> <br>
+                  &#8377 <%= listing.price.toLocaleString("en-IN") %>/night
+                  <i class="tax-info">&nbsp; &nbsp; +18% GST</i>
+                  <br>
+                  <span class="guests-hint">Up to <%= listing.maxGuests || 1 %> guest<%= (listing.maxGuests || 1) > 1 ? "s" : "" %></span>
+                </p>
+              </div>
+            </div>
+          </a>
         </div>
-      </a>
+      </div>
     <% } %>
   </div>
 
@@ -139,6 +233,32 @@
         window.location.href = "/listings";
       } else {
         window.location.href = "/listings?category=" + encodeURIComponent(category);
+      }
+    });
+  });
+
+  // Favorite heart toggle
+  document.querySelectorAll(".favorite-heart").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const listingId = btn.getAttribute("data-listing-id");
+      try{
+        const res = await fetch(`/listings/${listingId}/favorite`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if(res.redirected || res.status === 401 || res.status === 403){
+          window.location.href = "/login";
+          return;
+        }
+
+        const data = await res.json();
+        btn.classList.toggle("favorited", data.favorited);
+      } catch(err){
+        console.error("Failed to toggle favorite:", err);
       }
     });
   });

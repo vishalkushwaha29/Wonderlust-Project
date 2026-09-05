@@ -19,10 +19,21 @@
             <%= listing.description %> <br>
             &#8377;<%= listing.price.toLocaleString("en-IN") %> <br>
             <%= listing.location %> <br>
-            <%= listing.country %>
+            <%= listing.country %> <br>
+            <span class="text-muted">Up to <%= listing.maxGuests || 1 %> guest<%= (listing.maxGuests || 1) > 1 ? "s" : "" %></span>
         </p>
         </div>
     </div>
+    <% if(currUser){ %>
+      <div class="col-6 offset-3 mt-2">
+        <button id="show-favorite-heart"
+                class="btn btn-outline-danger btn-sm <%= currUser.favorites && currUser.favorites.map(id => id.toString()).includes(listing._id.toString()) ? 'active' : '' %>"
+                data-listing-id="<%= listing._id %>">
+          <i class="fa-solid fa-heart"></i>
+          <span class="favorite-label"><%= currUser.favorites && currUser.favorites.map(id => id.toString()).includes(listing._id.toString()) ? "Saved to favorites" : "Save to favorites" %></span>
+        </button>
+      </div>
+    <% } %>
     <br>
     <% if(currUser && listing.owner && listing.owner._id.equals(currUser._id)){  %>
     <div class="btns">
@@ -164,6 +175,32 @@
         mapDiv.style.display = "none";
       });
   });
+</script>
+
+<script>
+  const favBtn = document.getElementById("show-favorite-heart");
+  if(favBtn){
+    favBtn.addEventListener("click", async () => {
+      const listingId = favBtn.getAttribute("data-listing-id");
+      try{
+        const res = await fetch(`/listings/${listingId}/favorite`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if(res.redirected || res.status === 401 || res.status === 403){
+          window.location.href = "/login";
+          return;
+        }
+
+        const data = await res.json();
+        favBtn.classList.toggle("active", data.favorited);
+        favBtn.querySelector(".favorite-label").textContent = data.favorited ? "Saved to favorites" : "Save to favorites";
+      } catch(err){
+        console.error("Failed to toggle favorite:", err);
+      }
+    });
+  }
 </script>
 
 </body>

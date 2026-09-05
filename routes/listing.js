@@ -48,11 +48,72 @@ router.get(
       );
     }
 
+    // Show a "Popular destinations" rail only on the default, unfiltered view.
+    let popularDestinations = [];
+    if (!destination && !category) {
+      popularDestinations = await Listing.aggregate([
+        {
+          $group: {
+            _id: "$location",
+            country: { $first: "$country" },
+            image: { $first: "$image.url" },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { count: -1 } },
+        { $limit: 8 },
+      ]);
+    }
+
+    const favoriteIds = req.user
+      ? req.user.favorites.map((id) => id.toString())
+      : [];
+
     res.render("listings/index.ejs", {
       allListings,
       destination: destination || "",
       category: category || "",
+      popularDestinations,
+      favoriteIds,
     });
+  }),
+);
+
+// Favorites — a logged-in user's saved listings.
+// Registered before "/:id" so "favorites" isn't mistaken for a listing ID.
+router.get(
+  "/favorites/mine",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const user = await req.user.populate("favorites");
+    const allListings = user.favorites;
+    const favoriteIds = allListings.map((l) => l._id.toString());
+    res.render("listings/favorites.ejs", { allListings, favoriteIds });
+  }),
+);
+
+// Toggle a listing as a favorite for the logged-in user (AJAX)
+router.post(
+  "/:id/favorite",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const { id } = req.params;
+    const listing = await Listing.findById(id);
+    if (!listing) {
+      return res.status(404).json({ error: "Listing not found" });
+    }
+
+    const user = req.user;
+    const alreadyFavorited = user.favorites.some((favId) => favId.equals(id));
+
+    if (alreadyFavorited) {
+      user.favorites = user.favorites.filter((favId) => !favId.equals(id));
+    } else {
+      user.favorites.push(id);
+    }
+    await user.save();
+
+    res.json({ favorited: !alreadyFavorited });
   }),
 );
 

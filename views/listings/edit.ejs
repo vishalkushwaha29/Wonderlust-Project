@@ -42,6 +42,10 @@
             <input name="listing[location]" value="<%= listing.location %>" type="text" class="form-control" required>
         </div>
         <div class="mb-3">
+            <label for="maxGuests" class="form-label">Max Guests</label>
+            <input name="listing[maxGuests]" value="<%= listing.maxGuests || 1 %>" type="number" min="1" class="form-control">
+        </div>
+        <div class="mb-3">
             <label for="category" class="form-label">Category</label>
             <select name="listing[category]" class="form-control">
                 <option value="" <%= !listing.category ? "selected" : "" %>>Select a category</option>

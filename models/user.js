@@ -18,6 +18,12 @@ const userSchema = new Schema({
     },
     filename: String,
   },
+  favorites: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Listing",
+    },
+  ],
 });
 
 userSchema.virtual("avatarUrl").get(function () {
