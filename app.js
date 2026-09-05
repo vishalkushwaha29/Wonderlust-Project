@@ -22,17 +22,35 @@ const User = require("./models/user.js");
 
 const dbUrl = process.env.ATLASDB_URL;
 
-main()
+// In a serverless environment (Vercel), this module can be re-invoked on
+// every cold start. Reconnecting from scratch each time can create many
+// rapid, overlapping connections to Atlas, which sometimes causes TLS/SSL
+// handshake errors. Caching the connection avoids that.
+let isConnecting = null;
+
+async function main() {
+  if (mongoose.connection.readyState === 1) {
+    // Already connected (warm serverless instance reusing this module).
+    return;
+  }
+  if (!isConnecting) {
+    isConnecting = mongoose.connect(dbUrl, {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 10000,
+    });
+  }
+  await isConnecting;
+}
+
+const dbReady = main();
+dbReady
   .then(() => {
     console.log("connected to DB");
   })
   .catch((err) => {
     console.log(err);
+    isConnecting = null;
   });
-
-async function main() {
-  await mongoose.connect(dbUrl);
-}
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -42,7 +60,11 @@ app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
 const store = MongoStore.create({
-  mongoUrl: dbUrl,
+  // Reuse the same Mongo client/connection that mongoose already
+  // maintains, instead of opening a second separate connection to
+  // Atlas — halves connection overhead and reduces the chance of
+  // TLS handshake errors on serverless cold starts.
+  clientPromise: dbReady.then(() => mongoose.connection.getClient()),
   crypto: {
     secret: process.env.SECRET,
   },
