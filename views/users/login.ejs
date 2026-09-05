@@ -17,6 +17,7 @@
                 <!-- Password Div -->
                 <div class="mb-3">
                   <label for="password" class="form-label">Password</label>
+                  <div class="password-wrapper">
                     <input 
                         name="password"
                         id="password"
@@ -24,6 +25,10 @@
                         class="form-control"
                         required
                     >
+                    <button type="button" class="password-toggle-btn" data-target="password" aria-label="Show password">
+                      <i class="fa-solid fa-eye"></i>
+                    </button>
+                  </div>
                 </div>
                 <button class="btn btn-success">Login</button>
             </form>
@@ -31,3 +36,40 @@
             <a href="/forgot-password">Forgot password?</a>
         </div>
     </div>
+
+<style>
+  .password-wrapper{
+    position: relative;
+  }
+  .password-toggle-btn{
+    position: absolute;
+    top: 50%;
+    right: 0.75rem;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0;
+  }
+  .password-toggle-btn:hover{
+    color: #212529;
+  }
+</style>
+<script>
+  document.querySelectorAll(".password-toggle-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const input = document.getElementById(btn.getAttribute("data-target"));
+      const icon = btn.querySelector("i");
+      if(input.type === "password"){
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+      } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+      }
+    });
+  });
+</script>
