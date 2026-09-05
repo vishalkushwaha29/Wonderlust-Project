@@ -2,10 +2,10 @@
 
 <body>
     <div class="row mt-3">
-        <div class="col-8 offset-3">
+        <div class="col-12 col-md-8 offset-md-2">
         <h3><%= listing.title %></h3>
        </div>
-    <div class="card col-6 offset-3">
+    <div class="card col-12 col-md-6 offset-md-3">
         <img src="<%= listing.image.url %>" class="card-img-top show-img" alt="listing_image">
         <div class="card-body">
           <p class="card-text">
@@ -25,7 +25,7 @@
         </div>
     </div>
     <% if(currUser){ %>
-      <div class="col-6 offset-3 mt-2">
+      <div class="col-12 col-md-6 offset-md-3 mt-2 mb-4">
         <button id="show-favorite-heart"
                 class="btn btn-outline-danger btn-sm <%= currUser.favorites && currUser.favorites.map(id => id.toString()).includes(listing._id.toString()) ? 'active' : '' %>"
                 data-listing-id="<%= listing._id %>">
@@ -37,15 +37,15 @@
     <br>
     <% if(currUser && listing.owner && listing.owner._id.equals(currUser._id)){  %>
     <div class="btns">
-        <a href="/listings/<%= listing._id %>/edit" class="btn btn-danger col-1 offset-3">Edit</a>
+        <a href="/listings/<%= listing._id %>/edit" class="btn btn-danger col-auto ms-md-3">Edit</a>
         <br>
         <form action="/listings/<%= listing._id %>?_method=DELETE" method="post">
-        <button class="btn btn-dark offset-5">Delete</button>
+        <button class="btn btn-dark ms-md-3">Delete</button>
     </form>
     </div>
  </div>
   <% } %>
- <div class="col-8 offset-3  mb-3">
+ <div class="col-12 col-md-8 offset-md-2 mb-3">
     <hr> 
       <% if(currUser){  %>
     <h4>Leave a Review</h4>
@@ -115,7 +115,7 @@
    </ul>
   <% } %>
  </div>
- <div class="card col-6 offset-3">
+ <div class="card col-12 col-md-6 offset-md-3">
   <h3>Where you'll be</h3>
   <div id="map"></div>
 </div>

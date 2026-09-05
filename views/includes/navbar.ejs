@@ -17,6 +17,16 @@
     border-radius: 1.6rem;
     padding: 0.5rem 3rem 0.5rem 3rem;
     font-size: 1rem;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  @media (max-width: 576px){
+    .search-inp{
+      padding: 0.5rem 1rem 0.5rem 1rem;
+    }
+    .btn-search span{
+      display: none; /* icon-only search button on very small screens */
+    }
   }
 
   /* Profile icon */
@@ -48,8 +58,8 @@
   #profile-drawer{
     position: fixed;
     top: 0;
-    right: -320px;
-    width: 300px;
+    right: -100%;
+    width: min(300px, 90vw);
     height: 100%;
     background-color: var(--bs-body-bg);
     box-shadow: -2px 0 10px rgba(0,0,0,0.2);
@@ -73,9 +83,14 @@
   }
   .drawer-header{
     display: flex;
-    justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
+    padding-right: 2rem;
+  }
+  #drawer-close{
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
   }
   .drawer-link{
     display: block;
@@ -99,6 +114,7 @@
 <div id="drawer-backdrop"></div>
 <div id="profile-drawer">
   <div class="drawer-header">
+    <button id="drawer-close" class="btn-close" aria-label="Close"></button>
     <div class="d-flex align-items-center">
       <% if(currUser){ %>
         <img src="<%= currUser.avatarUrl %>" alt="avatar" style="width: 3rem; height: 3rem; border-radius: 50%; object-fit: cover; margin-right: 0.75rem;">
@@ -110,7 +126,6 @@
         <small class="text-muted"><% if(currUser){ %><%= currUser.email %><% } %></small>
       </div>
     </div>
-    <button id="drawer-close" class="btn-close" aria-label="Close"></button>
   </div>
   <a href="/profile" class="drawer-link"><i class="fa-solid fa-circle-user"></i>&nbsp; My Profile</a>
   <a href="/listings/new" class="drawer-link"><i class="fa-solid fa-house"></i>&nbsp; Airbnb your home</a>
@@ -140,10 +155,11 @@
         <a class="nav-link" href="/listings">Explore</a>
       </div>
 <!-- Search -->
-      <div class="navbar-nav ms-auto">
+      <div class="navbar-nav ms-auto align-items-center">
+        <a href="/listings" class="nav-link me-2" title="Home"><i class="fa-solid fa-house"></i></a>
         <form class="d-flex" role="search" action="/listings" method="GET">
         <input class="form-control me-2 search-inp" type="search" name="destination" placeholder="Search destination  "/>
-        <button class="btn btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i>Search</button>
+        <button class="btn btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></button>
         </form>
       </div>
 

@@ -54,10 +54,21 @@ body {
     align-items: space-evenly;
     border-top: 1px solid var(--bs-border-color);
 }
+
 /* Ensure dark-styled buttons stay visible against a dark theme background */
 .btn-dark{
-    border: 1px solid #44a8ff;
+    border: 1px solid #6c757d !important;
 }
+
+/* Global responsiveness safety net */
+img{
+    max-width: 100%;
+}
+.container, .container-fluid{
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
 /* card */
 
 .card {
@@ -100,4 +111,6 @@ body {
 
 .btns {
     display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
