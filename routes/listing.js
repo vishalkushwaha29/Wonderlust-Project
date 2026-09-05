@@ -48,23 +48,6 @@ router.get(
       );
     }
 
-    // Show a "Popular destinations" rail only on the default, unfiltered view.
-    let popularDestinations = [];
-    if (!destination && !category) {
-      popularDestinations = await Listing.aggregate([
-        {
-          $group: {
-            _id: "$location",
-            country: { $first: "$country" },
-            image: { $first: "$image.url" },
-            count: { $sum: 1 },
-          },
-        },
-        { $sort: { count: -1 } },
-        { $limit: 8 },
-      ]);
-    }
-
     const favoriteIds = req.user
       ? req.user.favorites.map((id) => id.toString())
       : [];
@@ -73,7 +56,6 @@ router.get(
       allListings,
       destination: destination || "",
       category: category || "",
-      popularDestinations,
       favoriteIds,
     });
   }),

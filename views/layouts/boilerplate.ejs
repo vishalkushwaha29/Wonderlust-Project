@@ -23,6 +23,9 @@
     <%- include("../includes/flash.ejs") %>
 
 <div class="container mt-2">
+    <a id="home-btn" href="/listings" class="btn btn-light border" style="display:none;">
+        <i class="fa-solid fa-house"></i> Home
+    </a>
     <button id="back-btn" class="btn btn-light border" style="display:none;" onclick="history.back()">
         <i class="fa-solid fa-arrow-left"></i> Back
     </button>
@@ -33,11 +36,12 @@
 </div>
 
 <script>
-  // Show the back button on every page except the main listings/explore page
+  // Show Back/Home buttons on every page except the main listings/explore page
   (function(){
     const path = window.location.pathname;
     if(path !== "/listings" && path !== "/"){
       document.getElementById("back-btn").style.display = "inline-block";
+      document.getElementById("home-btn").style.display = "inline-block";
     }
   })();
 </script>
