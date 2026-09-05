@@ -1,36 +1,46 @@
 <style>
-  .btn-search{
+
+  .btn-search {
     background-color: #fe424d;
     color: #fff;
     border-radius: 1.6rem;
     padding: 0 1rem 0 1rem;
   }
-  .btn-search:hover{
+
+  .btn-search:hover {
     background-color: #fe424d;
     color: #fff;
   }
-  .btn-search i{
+
+  .btn-search i {
     display: inline;
     margin-right: 0.5rem;
   }
-  .search-inp{
+
+  .search-inp {
     border-radius: 1.6rem;
     padding: 0.5rem 3rem 0.5rem 3rem;
     font-size: 1rem;
     min-width: 0;
     flex: 1 1 auto;
   }
-  @media (max-width: 576px){
-    .search-inp{
+
+  @media (max-width: 576px) {
+
+    .search-inp {
       padding: 0.5rem 1rem 0.5rem 1rem;
     }
-    .btn-search span{
-      display: none; /* icon-only search button on very small screens */
+
+    .btn-search span {
+      display: none;
     }
+
   }
 
+
   /* Profile icon */
-  .profile-btn{
+
+  .profile-btn {
     width: 2.6rem;
     height: 2.6rem;
     border-radius: 50%;
@@ -45,170 +55,493 @@
     padding: 0;
     overflow: hidden;
   }
-  .profile-btn img{
+
+  .profile-btn img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  .profile-btn:hover{
+
+  .profile-btn:hover {
     opacity: 0.9;
   }
 
+
   /* Slide-in drawer */
-  #profile-drawer{
+
+  #profile-drawer {
     position: fixed;
     top: 0;
     right: -100%;
     width: min(300px, 90vw);
     height: 100%;
     background-color: var(--bs-body-bg);
-    box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
     z-index: 1050;
     transition: right 0.3s ease-in-out;
     padding: 1.5rem;
   }
-  #profile-drawer.open{
+
+  #profile-drawer.open {
     right: 0;
   }
-  #drawer-backdrop{
+
+
+  #drawer-backdrop {
     display: none;
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.4);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
     z-index: 1040;
   }
-  #drawer-backdrop.open{
+
+  #drawer-backdrop.open {
     display: block;
   }
-  .drawer-header{
+
+
+  .drawer-header {
     display: flex;
     align-items: center;
     margin-bottom: 1.5rem;
     padding-right: 2rem;
   }
-  #drawer-close{
+
+
+  #drawer-close {
     position: absolute;
     top: 1rem;
     right: 1rem;
   }
-  .drawer-link{
+
+
+  .drawer-link {
     display: block;
     padding: 0.75rem 0;
     color: inherit;
     text-decoration: none;
-    border-bottom: 1px solid rgba(128,128,128,0.2);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
   }
-  .drawer-link:hover{
+
+  .drawer-link:hover {
     color: #fe424d;
   }
-  .theme-toggle-row{
+
+
+  .theme-toggle-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 0;
-    border-bottom: 1px solid rgba(128,128,128,0.2);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
   }
+
 </style>
 
+
+<!-- PROFILE DRAWER -->
+
 <div id="drawer-backdrop"></div>
+
 <div id="profile-drawer">
+
   <div class="drawer-header">
-    <button id="drawer-close" class="btn-close" aria-label="Close"></button>
+
+    <button
+      id="drawer-close"
+      class="btn-close"
+      aria-label="Close">
+    </button>
+
+
     <div class="d-flex align-items-center">
-      <% if(currUser){ %>
-        <img src="<%= currUser.avatarUrl %>" alt="avatar" style="width: 3rem; height: 3rem; border-radius: 50%; object-fit: cover; margin-right: 0.75rem;">
+
+      <% if (typeof currUser !== "undefined" && currUser) { %>
+
+        <img
+          src="<%= currUser.avatarUrl %>"
+          alt="avatar"
+          style="
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 0.75rem;
+          "
+        >
+
       <% } %>
+
+
       <div>
+
         <h5 class="mb-0">
-          <% if(currUser){ %>@<%= currUser.username %><% } %>
+
+          <% if (typeof currUser !== "undefined" && currUser) { %>
+
+            @<%= currUser.username %>
+
+          <% } %>
+
         </h5>
-        <small class="text-muted"><% if(currUser){ %><%= currUser.email %><% } %></small>
+
+
+        <small class="text-muted">
+
+          <% if (typeof currUser !== "undefined" && currUser) { %>
+
+            <%= currUser.email %>
+
+          <% } %>
+
+        </small>
+
       </div>
+
     </div>
+
   </div>
-  <a href="/profile" class="drawer-link"><i class="fa-solid fa-circle-user"></i>&nbsp; My Profile</a>
-  <a href="/listings/new" class="drawer-link"><i class="fa-solid fa-house"></i>&nbsp; Airbnb your home</a>
-  <a href="/change-password" class="drawer-link"><i class="fa-solid fa-key"></i>&nbsp; Change Password</a>
+
+
+  <a href="/profile" class="drawer-link">
+    <i class="fa-solid fa-circle-user"></i>
+    &nbsp; My Profile
+  </a>
+
+
+  <a href="/listings/new" class="drawer-link">
+    <i class="fa-solid fa-house"></i>
+    &nbsp; Airbnb your home
+  </a>
+
+
+  <a href="/change-password" class="drawer-link">
+    <i class="fa-solid fa-key"></i>
+    &nbsp; Change Password
+  </a>
+
+
   <div class="theme-toggle-row">
-    <span><i class="fa-solid fa-moon"></i>&nbsp; Dark Theme</span>
+
+    <span>
+      <i class="fa-solid fa-moon"></i>
+      &nbsp; Dark Theme
+    </span>
+
+
     <div class="form-check form-switch mb-0">
-      <input class="form-check-input" type="checkbox" role="switch" id="dark-theme-toggle">
+
+      <input
+        class="form-check-input"
+        type="checkbox"
+        role="switch"
+        id="dark-theme-toggle"
+      >
+
     </div>
+
   </div>
-  <a href="/listings/favorites/mine" class="drawer-link"><i class="fa-solid fa-heart"></i>&nbsp; Favorites</a>
-  <a href="/logout" class="drawer-link"><i class="fa-solid fa-right-from-bracket"></i>&nbsp; Log out</a>
+
+
+  <a href="/listings/favorites/mine" class="drawer-link">
+
+    <i class="fa-solid fa-heart"></i>
+    &nbsp; Favorites
+
+  </a>
+
+
+  <a href="/logout" class="drawer-link">
+
+    <i class="fa-solid fa-right-from-bracket"></i>
+    &nbsp; Log out
+
+  </a>
+
 </div>
 
+
+
+<!-- NAVBAR -->
+
 <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
+
   <div class="container-fluid">
 
-    <a class="navbar-brand" href="/listings"><i class="fa-regular fa-compass"></i></a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="
-    collapse" data-bs-target="#navbarNavAltMarkup">
+
+    <a class="navbar-brand" href="/listings">
+
+      <i class="fa-regular fa-compass"></i>
+
+    </a>
+
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNavAltMarkup"
+    >
 
       <span class="navbar-toggler-icon"></span>
 
     </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+
+
+    <div
+      class="collapse navbar-collapse"
+      id="navbarNavAltMarkup"
+    >
+
+
       <div class="navbar-nav">
-        <a class="nav-link" href="/listings">Explore</a>
+
+        <a class="nav-link" href="/listings">
+          Explore
+        </a>
+
       </div>
-<!-- Search -->
+
+
+
+      <!-- SEARCH -->
+
       <div class="navbar-nav ms-auto align-items-center">
-        <a href="/listings" class="nav-link me-2" title="Home"><i class="fa-solid fa-house"></i></a>
-        <form class="d-flex" role="search" action="/listings" method="GET">
-        <input class="form-control me-2 search-inp" type="search" name="destination" placeholder="Search destination  "/>
-        <button class="btn btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></button>
+
+        <a
+          href="/listings"
+          class="nav-link me-2"
+          title="Home"
+        >
+
+          <i class="fa-solid fa-house"></i>
+
+        </a>
+
+
+        <form
+          class="d-flex"
+          role="search"
+          action="/listings"
+          method="GET"
+        >
+
+          <input
+            class="form-control me-2 search-inp"
+            type="search"
+            name="destination"
+            placeholder="Search destination"
+          >
+
+
+          <button
+            class="btn btn-search"
+            type="submit"
+          >
+
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <span>Search</span>
+
+          </button>
+
         </form>
+
       </div>
+
+
+
+      <!-- USER SECTION -->
 
       <div class="navbar-nav ms-auto">
-        <% if(!currUser){  %>
-               <a class="nav-link" href="/listings/new">Airbnb your home</a>
-               <a class="nav-link" href="/signup"><b>Sign up</b></a>
-               <a class="nav-link" href="/login"><b>Log in</b></a>
-          <% }else{  %>
-               <button id="profile-btn" class="profile-btn" type="button" aria-label="Profile menu">
-                  <img src="<%= currUser.avatarUrl %>" alt="profile">
-               </button>
-             <%  } %>
+
+
+        <% if (typeof currUser === "undefined" || !currUser) { %>
+
+          <a
+            class="nav-link"
+            href="/listings/new"
+          >
+            Airbnb your home
+          </a>
+
+
+          <a
+            class="nav-link"
+            href="/signup"
+          >
+            <b>Sign up</b>
+          </a>
+
+
+          <a
+            class="nav-link"
+            href="/login"
+          >
+            <b>Log in</b>
+          </a>
+
+
+        <% } else { %>
+
+
+          <button
+            id="profile-btn"
+            class="profile-btn"
+            type="button"
+            aria-label="Profile menu"
+          >
+
+            <% if (currUser.avatarUrl) { %>
+
+              <img
+                src="<%= currUser.avatarUrl %>"
+                alt="profile"
+              >
+
+            <% } else { %>
+
+              <i class="fa-solid fa-user"></i>
+
+            <% } %>
+
+          </button>
+
+
+        <% } %>
+
+
       </div>
+
     </div>
+
   </div>
+
 </nav>
 
+
+
+<!-- SCRIPT -->
+
 <script>
-  const profileBtn = document.getElementById("profile-btn");
-  const drawer = document.getElementById("profile-drawer");
-  const backdrop = document.getElementById("drawer-backdrop");
-  const drawerClose = document.getElementById("drawer-close");
-  const themeToggle = document.getElementById("dark-theme-toggle");
 
-  function openDrawer(){
-    drawer.classList.add("open");
-    backdrop.classList.add("open");
-  }
-  function closeDrawer(){
-    drawer.classList.remove("open");
-    backdrop.classList.remove("open");
+  const profileBtn =
+    document.getElementById("profile-btn");
+
+  const drawer =
+    document.getElementById("profile-drawer");
+
+  const backdrop =
+    document.getElementById("drawer-backdrop");
+
+  const drawerClose =
+    document.getElementById("drawer-close");
+
+  const themeToggle =
+    document.getElementById("dark-theme-toggle");
+
+
+  function openDrawer() {
+
+    if (drawer) {
+      drawer.classList.add("open");
+    }
+
+    if (backdrop) {
+      backdrop.classList.add("open");
+    }
+
   }
 
-  if(profileBtn){
-    profileBtn.addEventListener("click", openDrawer);
-  }
-  drawerClose.addEventListener("click", closeDrawer);
-  backdrop.addEventListener("click", closeDrawer);
 
-  // Dark theme: read saved preference and reflect it in the toggle
-  const savedTheme = localStorage.getItem("theme") || "light";
-  document.documentElement.setAttribute("data-bs-theme", savedTheme);
-  if(themeToggle){
-    themeToggle.checked = savedTheme === "dark";
-    themeToggle.addEventListener("change", () => {
-      const newTheme = themeToggle.checked ? "dark" : "light";
-      document.documentElement.setAttribute("data-bs-theme", newTheme);
-      localStorage.setItem("theme", newTheme);
-    });
+  function closeDrawer() {
+
+    if (drawer) {
+      drawer.classList.remove("open");
+    }
+
+    if (backdrop) {
+      backdrop.classList.remove("open");
+    }
+
   }
+
+
+  if (profileBtn) {
+
+    profileBtn.addEventListener(
+      "click",
+      openDrawer
+    );
+
+  }
+
+
+  if (drawerClose) {
+
+    drawerClose.addEventListener(
+      "click",
+      closeDrawer
+    );
+
+  }
+
+
+  if (backdrop) {
+
+    backdrop.addEventListener(
+      "click",
+      closeDrawer
+    );
+
+  }
+
+
+  // Dark theme
+
+  const savedTheme =
+    localStorage.getItem("theme") || "light";
+
+
+  document.documentElement.setAttribute(
+    "data-bs-theme",
+    savedTheme
+  );
+
+
+  if (themeToggle) {
+
+    themeToggle.checked =
+      savedTheme === "dark";
+
+
+    themeToggle.addEventListener(
+      "change",
+      () => {
+
+        const newTheme =
+          themeToggle.checked
+            ? "dark"
+            : "light";
+
+
+        document.documentElement.setAttribute(
+          "data-bs-theme",
+          newTheme
+        );
+
+
+        localStorage.setItem(
+          "theme",
+          newTheme
+        );
+
+      }
+    );
+
+  }
+
 </script>
