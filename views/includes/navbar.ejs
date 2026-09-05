@@ -116,14 +116,14 @@
   <div class="drawer-header">
     <button id="drawer-close" class="btn-close" aria-label="Close"></button>
     <div class="d-flex align-items-center">
-      <% if(currUser){ %>
+      <% if(typeof currUser !== "undefined" && currUser){ %>
         <img src="<%= currUser.avatarUrl %>" alt="avatar" style="width: 3rem; height: 3rem; border-radius: 50%; object-fit: cover; margin-right: 0.75rem;">
       <% } %>
       <div>
         <h5 class="mb-0">
-          <% if(currUser){ %>@<%= currUser.username %><% } %>
+          <% if(typeof currUser !== "undefined" && currUser){ %>@<%= currUser.username %><% } %>
         </h5>
-        <small class="text-muted"><% if(currUser){ %><%= currUser.email %><% } %></small>
+        <small class="text-muted"><% if(typeof currUser !== "undefined" && currUser){ %><%= currUser.email %><% } %></small>
       </div>
     </div>
   </div>
@@ -164,7 +164,7 @@
       </div>
 
       <div class="navbar-nav ms-auto">
-        <% if(!currUser){  %>
+        <% if(typeof currUser === "undefined" || !currUser){  %>
                <a class="nav-link" href="/listings/new">Airbnb your home</a>
                <a class="nav-link" href="/signup"><b>Sign up</b></a>
                <a class="nav-link" href="/login"><b>Log in</b></a>
