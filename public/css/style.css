@@ -60,6 +60,18 @@ body {
     border: 1px solid #6c757d !important;
 }
 
+/* btn-outline-dark uses a fixed dark color regardless of theme, which
+   blends into the background in dark mode — make it theme-aware. */
+[data-bs-theme="dark"] .btn-outline-dark{
+    color: var(--bs-body-color) !important;
+    border-color: var(--bs-body-color) !important;
+}
+[data-bs-theme="dark"] .btn-outline-dark:hover{
+    color: var(--bs-body-bg) !important;
+    background-color: var(--bs-body-color) !important;
+    border-color: var(--bs-body-color) !important;
+}
+
 /* Global responsiveness safety net */
 img{
     max-width: 100%;
