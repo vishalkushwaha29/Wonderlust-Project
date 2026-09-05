@@ -25,7 +25,7 @@
         </div>
     </div>
     <% if(currUser){ %>
-      <div class="col-12 col-md-6 offset-md-3 mt-2 mb-4">
+      <div class="col-12 col-md-6 offset-md-3 mt-2 mb-3">
         <button id="show-favorite-heart"
                 class="btn btn-outline-danger btn-sm <%= currUser.favorites && currUser.favorites.map(id => id.toString()).includes(listing._id.toString()) ? 'active' : '' %>"
                 data-listing-id="<%= listing._id %>">
@@ -34,17 +34,15 @@
         </button>
       </div>
     <% } %>
-    <br>
     <% if(currUser && listing.owner && listing.owner._id.equals(currUser._id)){  %>
-    <div class="btns">
-        <a href="/listings/<%= listing._id %>/edit" class="btn btn-danger col-auto ms-md-3">Edit</a>
-        <br>
+    <div class="col-12 col-md-6 offset-md-3 btns mb-4">
+        <a href="/listings/<%= listing._id %>/edit" class="btn btn-danger">Edit</a>
         <form action="/listings/<%= listing._id %>?_method=DELETE" method="post">
-        <button class="btn btn-dark ms-md-3">Delete</button>
+        <button class="btn btn-dark">Delete</button>
     </form>
     </div>
- </div>
   <% } %>
+    <br>
  <div class="col-12 col-md-8 offset-md-2 mb-3">
     <hr> 
       <% if(currUser){  %>

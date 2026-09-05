@@ -118,26 +118,36 @@
     <div class="d-flex align-items-center">
       <% if(typeof currUser !== "undefined" && currUser){ %>
         <img src="<%= currUser.avatarUrl %>" alt="avatar" style="width: 3rem; height: 3rem; border-radius: 50%; object-fit: cover; margin-right: 0.75rem;">
+        <div>
+          <h5 class="mb-0">@<%= currUser.username %></h5>
+          <small class="text-muted"><%= currUser.email %></small>
+        </div>
+      <% } else { %>
+        <h5 class="mb-0">Welcome to Wanderlust</h5>
       <% } %>
-      <div>
-        <h5 class="mb-0">
-          <% if(typeof currUser !== "undefined" && currUser){ %>@<%= currUser.username %><% } %>
-        </h5>
-        <small class="text-muted"><% if(typeof currUser !== "undefined" && currUser){ %><%= currUser.email %><% } %></small>
-      </div>
     </div>
   </div>
-  <a href="/profile" class="drawer-link"><i class="fa-solid fa-circle-user"></i>&nbsp; My Profile</a>
-  <a href="/listings/new" class="drawer-link"><i class="fa-solid fa-house"></i>&nbsp; Airbnb your home</a>
-  <a href="/change-password" class="drawer-link"><i class="fa-solid fa-key"></i>&nbsp; Change Password</a>
+
+  <% if(typeof currUser !== "undefined" && currUser){ %>
+    <a href="/profile" class="drawer-link"><i class="fa-solid fa-circle-user"></i>&nbsp; My Profile</a>
+    <a href="/listings/new" class="drawer-link"><i class="fa-solid fa-house"></i>&nbsp; Airbnb your home</a>
+    <a href="/change-password" class="drawer-link"><i class="fa-solid fa-key"></i>&nbsp; Change Password</a>
+  <% } else { %>
+    <a href="/signup" class="drawer-link"><i class="fa-solid fa-user-plus"></i>&nbsp; Sign up</a>
+    <a href="/login" class="drawer-link"><i class="fa-solid fa-right-to-bracket"></i>&nbsp; Log in</a>
+  <% } %>
+
   <div class="theme-toggle-row">
     <span><i class="fa-solid fa-moon"></i>&nbsp; Dark Theme</span>
     <div class="form-check form-switch mb-0">
       <input class="form-check-input" type="checkbox" role="switch" id="dark-theme-toggle">
     </div>
   </div>
-  <a href="/listings/favorites/mine" class="drawer-link"><i class="fa-solid fa-heart"></i>&nbsp; Favorites</a>
-  <a href="/logout" class="drawer-link"><i class="fa-solid fa-right-from-bracket"></i>&nbsp; Log out</a>
+
+  <% if(typeof currUser !== "undefined" && currUser){ %>
+    <a href="/listings/favorites/mine" class="drawer-link"><i class="fa-solid fa-heart"></i>&nbsp; Favorites</a>
+    <a href="/logout" class="drawer-link"><i class="fa-solid fa-right-from-bracket"></i>&nbsp; Log out</a>
+  <% } %>
 </div>
 
 <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
@@ -164,15 +174,13 @@
       </div>
 
       <div class="navbar-nav ms-auto">
-        <% if(typeof currUser === "undefined" || !currUser){  %>
-               <a class="nav-link" href="/listings/new">Airbnb your home</a>
-               <a class="nav-link" href="/signup"><b>Sign up</b></a>
-               <a class="nav-link" href="/login"><b>Log in</b></a>
-          <% }else{  %>
-               <button id="profile-btn" class="profile-btn" type="button" aria-label="Profile menu">
-                  <img src="<%= currUser.avatarUrl %>" alt="profile">
-               </button>
-             <%  } %>
+        <button id="profile-btn" class="profile-btn" type="button" aria-label="Profile menu">
+          <% if(typeof currUser !== "undefined" && currUser){ %>
+            <img src="<%= currUser.avatarUrl %>" alt="profile">
+          <% } else { %>
+            <i class="fa-solid fa-user"></i>
+          <% } %>
+        </button>
       </div>
     </div>
   </div>
