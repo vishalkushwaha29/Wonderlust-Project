@@ -16,6 +16,16 @@ body {
     color: #fe424d;
     font-size: 2rem;
 }
+.wanderlust-brand-text{
+    color: #fe424d;
+    font-weight: 700;
+    font-size: 1.4rem;
+}
+@media (max-width: 480px){
+    .wanderlust-brand-text{
+        font-size: 1.1rem;
+    }
+}
 .nav-link{
     color: var(--bs-body-color) !important;
 }
