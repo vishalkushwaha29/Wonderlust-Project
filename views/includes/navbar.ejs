@@ -53,13 +53,34 @@
     }
     #navbarNavAltMarkup .navbar-nav{
       width: 100%;
-      margin-bottom: 1rem;
+      margin-bottom: 0;
     }
     #navbarNavAltMarkup .navbar-nav.ms-auto{
       margin-left: 0 !important;
     }
+    /* Each link becomes a full-width row: icon + label, with a separator,
+       matching the profile drawer's look for a consistent design. */
+    #navbarNavAltMarkup .nav-link{
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      width: 100%;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid rgba(128,128,128,0.2);
+    }
     #navbarNavAltMarkup form.d-flex{
       width: 100%;
+      margin: 1rem 0;
+    }
+    #navbarNavAltMarkup .mobile-profile-row{
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      width: 100%;
+      padding: 0.85rem 0;
+    }
+    #navbarNavAltMarkup .profile-btn{
+      flex-shrink: 0;
     }
     #mobile-nav-backdrop{
       display: none;
@@ -208,11 +229,11 @@
     <div id="mobile-nav-backdrop"></div>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <a class="nav-link" href="/listings">Explore</a>
+        <a class="nav-link" href="/listings"><i class="fa-solid fa-compass d-md-none"></i>Explore</a>
       </div>
 <!-- Search -->
       <div class="navbar-nav ms-auto align-items-center">
-        <a href="/listings" class="nav-link me-2" title="Home"><i class="fa-solid fa-house"></i></a>
+        <a href="/listings" class="nav-link me-2" title="Home"><i class="fa-solid fa-house"></i><span class="d-md-none">Home</span></a>
         <form class="d-flex" role="search" action="/listings" method="GET">
         <input class="form-control me-2 search-inp" type="search" name="destination" placeholder="Search destination  "/>
         <button class="btn btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></button>
@@ -220,13 +241,18 @@
       </div>
 
       <div class="navbar-nav ms-auto">
-        <button id="profile-btn" class="profile-btn" type="button" aria-label="Profile menu">
-          <% if(typeof currUser !== "undefined" && currUser){ %>
-            <img src="<%= currUser.avatarUrl %>" alt="profile">
-          <% } else { %>
-            <i class="fa-solid fa-user"></i>
-          <% } %>
-        </button>
+        <div class="mobile-profile-row">
+          <button id="profile-btn" class="profile-btn" type="button" aria-label="Profile menu">
+            <% if(typeof currUser !== "undefined" && currUser){ %>
+              <img src="<%= currUser.avatarUrl %>" alt="profile">
+            <% } else { %>
+              <i class="fa-solid fa-user"></i>
+            <% } %>
+          </button>
+          <span class="d-md-none">
+            <% if(typeof currUser !== "undefined" && currUser){ %>@<%= currUser.username %><% } else { %>Profile<% } %>
+          </span>
+        </div>
       </div>
     </div>
   </div>
