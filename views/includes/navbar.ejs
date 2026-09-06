@@ -82,6 +82,15 @@
     #navbarNavAltMarkup .profile-btn{
       flex-shrink: 0;
     }
+    .mobile-nav-title{
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: #fe424d;
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(128,128,128,0.2);
+      width: 100%;
+    }
     #mobile-nav-backdrop{
       display: none;
       position: fixed;
@@ -206,7 +215,7 @@
   <div class="theme-toggle-row">
     <span><i class="fa-solid fa-moon"></i>&nbsp; Dark Theme</span>
     <div class="form-check form-switch mb-0">
-      <input class="form-check-input" type="checkbox" role="switch" id="dark-theme-toggle">
+      <input class="form-check-input theme-toggle-checkbox" type="checkbox" role="switch" id="dark-theme-toggle">
     </div>
   </div>
 
@@ -228,6 +237,7 @@
     </button>
     <div id="mobile-nav-backdrop"></div>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div class="d-md-none mobile-nav-title">Wanderlust</div>
       <div class="navbar-nav">
         <a class="nav-link" href="/listings"><i class="fa-solid fa-compass d-md-none"></i>Explore</a>
       </div>
@@ -254,6 +264,15 @@
           </span>
         </div>
       </div>
+
+      <div class="navbar-nav d-md-none w-100">
+        <div class="theme-toggle-row">
+          <span><i class="fa-solid fa-moon"></i>&nbsp; Dark Theme</span>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input theme-toggle-checkbox" type="checkbox" role="switch" id="dark-theme-toggle-mobile">
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </nav>
@@ -263,7 +282,7 @@
   const drawer = document.getElementById("profile-drawer");
   const backdrop = document.getElementById("drawer-backdrop");
   const drawerClose = document.getElementById("drawer-close");
-  const themeToggle = document.getElementById("dark-theme-toggle");
+  const themeToggles = document.querySelectorAll(".theme-toggle-checkbox");
 
   function openDrawer(){
     drawer.classList.add("open");
@@ -280,17 +299,20 @@
   drawerClose.addEventListener("click", closeDrawer);
   backdrop.addEventListener("click", closeDrawer);
 
-  // Dark theme: read saved preference and reflect it in the toggle
+  // Dark theme: read saved preference and reflect it across every toggle
+  // (there can be more than one — profile drawer and mobile nav panel).
   const savedTheme = localStorage.getItem("theme") || "light";
   document.documentElement.setAttribute("data-bs-theme", savedTheme);
-  if(themeToggle){
-    themeToggle.checked = savedTheme === "dark";
-    themeToggle.addEventListener("change", () => {
-      const newTheme = themeToggle.checked ? "dark" : "light";
+  themeToggles.forEach((toggle) => {
+    toggle.checked = savedTheme === "dark";
+    toggle.addEventListener("change", () => {
+      const newTheme = toggle.checked ? "dark" : "light";
       document.documentElement.setAttribute("data-bs-theme", newTheme);
       localStorage.setItem("theme", newTheme);
+      // Keep every toggle on the page in sync with each other.
+      themeToggles.forEach((t) => { t.checked = toggle.checked; });
     });
-  }
+  });
 
   // Mobile side-nav backdrop: show while the collapse menu is open,
   // and tapping it closes the menu (using Bootstrap's own Collapse API).
