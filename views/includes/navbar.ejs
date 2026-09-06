@@ -238,31 +238,44 @@
     <div id="mobile-nav-backdrop"></div>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="d-md-none mobile-nav-title">Wanderlust</div>
+
+      <!-- Mobile-only: Profile (if logged in) or Sign up / Log in (if not) -->
+      <div class="navbar-nav d-md-none w-100">
+        <% if(typeof currUser !== "undefined" && currUser){ %>
+          <div class="mobile-profile-row">
+            <button id="profile-btn-mobile" class="profile-btn" type="button" aria-label="Profile menu">
+              <img src="<%= currUser.avatarUrl %>" alt="profile">
+            </button>
+            <span>@<%= currUser.username %></span>
+          </div>
+        <% } else { %>
+          <a class="nav-link" href="/signup"><i class="fa-solid fa-user-plus"></i>Sign up</a>
+          <a class="nav-link" href="/login"><i class="fa-solid fa-right-to-bracket"></i>Log in</a>
+        <% } %>
+      </div>
+
       <div class="navbar-nav">
         <a class="nav-link" href="/listings"><i class="fa-solid fa-compass d-md-none"></i>Explore</a>
       </div>
-<!-- Search -->
-      <div class="navbar-nav ms-auto align-items-center">
-        <a href="/listings" class="nav-link me-2" title="Home"><i class="fa-solid fa-house"></i><span class="d-md-none">Home</span></a>
+
+      <!-- Desktop-only: Home icon + search bar -->
+      <div class="navbar-nav ms-auto align-items-center d-none d-md-flex">
+        <a href="/listings" class="nav-link me-2" title="Home"><i class="fa-solid fa-house"></i></a>
         <form class="d-flex" role="search" action="/listings" method="GET">
         <input class="form-control me-2 search-inp" type="search" name="destination" placeholder="Search destination  "/>
         <button class="btn btn-search" type="submit"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></button>
         </form>
       </div>
 
-      <div class="navbar-nav ms-auto">
-        <div class="mobile-profile-row">
-          <button id="profile-btn" class="profile-btn" type="button" aria-label="Profile menu">
-            <% if(typeof currUser !== "undefined" && currUser){ %>
-              <img src="<%= currUser.avatarUrl %>" alt="profile">
-            <% } else { %>
-              <i class="fa-solid fa-user"></i>
-            <% } %>
-          </button>
-          <span class="d-md-none">
-            <% if(typeof currUser !== "undefined" && currUser){ %>@<%= currUser.username %><% } else { %>Profile<% } %>
-          </span>
-        </div>
+      <!-- Desktop-only: profile icon (always visible, even logged out, so theme toggle stays reachable) -->
+      <div class="navbar-nav ms-auto d-none d-md-flex">
+        <button id="profile-btn" class="profile-btn" type="button" aria-label="Profile menu">
+          <% if(typeof currUser !== "undefined" && currUser){ %>
+            <img src="<%= currUser.avatarUrl %>" alt="profile">
+          <% } else { %>
+            <i class="fa-solid fa-user"></i>
+          <% } %>
+        </button>
       </div>
 
       <div class="navbar-nav d-md-none w-100">
@@ -278,7 +291,7 @@
 </nav>
 
 <script>
-  const profileBtn = document.getElementById("profile-btn");
+  const profileTriggers = document.querySelectorAll("#profile-btn, #profile-btn-mobile");
   const drawer = document.getElementById("profile-drawer");
   const backdrop = document.getElementById("drawer-backdrop");
   const drawerClose = document.getElementById("drawer-close");
@@ -293,9 +306,9 @@
     backdrop.classList.remove("open");
   }
 
-  if(profileBtn){
-    profileBtn.addEventListener("click", openDrawer);
-  }
+  profileTriggers.forEach((btn) => {
+    btn.addEventListener("click", openDrawer);
+  });
   drawerClose.addEventListener("click", closeDrawer);
   backdrop.addEventListener("click", closeDrawer);
 
