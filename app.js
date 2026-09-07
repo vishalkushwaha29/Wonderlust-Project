@@ -36,7 +36,9 @@ async function main() {
   if (!isConnecting) {
     isConnecting = mongoose.connect(dbUrl, {
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 20000,
+      socketTimeoutMS: 20000,
+      family: 4,
     });
   }
   await isConnecting;
