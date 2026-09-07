@@ -54,6 +54,17 @@ dbReady
     isConnecting = null;
   });
 
+// Safety net: if a promise rejection anywhere is never explicitly handled,
+// log it instead of letting Node crash the whole serverless process. A
+// crashed process is why one failed DB connection could break totally
+// unrelated requests until Vercel spun up a fresh instance.
+process.on("unhandledRejection", (reason) => {
+  console.log("Unhandled Rejection (kept process alive):", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.log("Uncaught Exception (kept process alive):", err);
+});
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
@@ -75,11 +86,7 @@ app.use(async (req, res, next) => {
 });
 
 const store = MongoStore.create({
-  // Reuse the same Mongo client/connection that mongoose already
-  // maintains, instead of opening a second separate connection to
-  // Atlas — halves connection overhead and reduces the chance of
-  // TLS handshake errors on serverless cold starts.
-  clientPromise: dbReady.then(() => mongoose.connection.getClient()),
+  mongoUrl: dbUrl,
   crypto: {
     secret: process.env.SECRET,
   },
