@@ -59,6 +59,19 @@ app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
+// On a cold serverless start, the very first request can otherwise reach a
+// route before the Mongo connection has finished establishing. Waiting here
+// ensures every request (even the first one) only proceeds once the DB is
+// actually ready, instead of failing and only succeeding on retry.
+app.use(async (req, res, next) => {
+  try {
+    await dbReady;
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 const store = MongoStore.create({
   // Reuse the same Mongo client/connection that mongoose already
   // maintains, instead of opening a second separate connection to
