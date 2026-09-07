@@ -85,8 +85,20 @@ app.use(async (req, res, next) => {
   }
 });
 
+// Reuse the same Mongo connection mongoose already maintains, instead of
+// letting connect-mongo open its own separate one — one connection attempt
+// to reason about instead of two. The .catch() here is attached
+// immediately, so if it rejects, Node treats it as handled (preventing a
+// process crash) rather than an unhandled rejection.
+const sessionClientPromise = dbReady
+  .then(() => mongoose.connection.getClient())
+  .catch((err) => {
+    console.log("Session store: Mongo client unavailable:", err.message);
+    throw err;
+  });
+
 const store = MongoStore.create({
-  mongoUrl: dbUrl,
+  clientPromise: sessionClientPromise,
   crypto: {
     secret: process.env.SECRET,
   },
