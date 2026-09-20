@@ -9,7 +9,12 @@ const { saveRedirectUrl, isLoggedIn } = require("../middleware.js");
 const { generateOtp, sendOtpEmail } = require("../utils/sendEmail.js");
 const multer = require("multer");
 const { storage } = require("../cloudConfig.js");
-const upload = multer({ storage });
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } }); // 5MB
+const {
+  loginLimiter,
+  signupLimiter,
+  otpLimiter,
+} = require("../utils/rateLimiters.js");
 
 router.get("/signup", (req, res) => {
   res.render("users/signup.ejs");
@@ -17,10 +22,16 @@ router.get("/signup", (req, res) => {
 
 router.post(
   "/signup",
+  signupLimiter,
   wrapAsync(async (req, res) => {
     let registeredUser;
     try {
       let { username, email, password } = req.body;
+
+      if (!password || password.length < 6) {
+        req.flash("error", "Password must be at least 6 characters.");
+        return req.session.save(() => res.redirect("/signup"));
+      }
 
       // If a previous signup attempt left behind an unverified account
       // with this username/email (e.g. because the OTP email failed to
@@ -71,6 +82,7 @@ router.get("/verify-otp", (req, res) => {
 
 router.post(
   "/verify-otp",
+  otpLimiter,
   wrapAsync(async (req, res) => {
     const { email, otp } = req.body;
 
@@ -96,6 +108,7 @@ router.post(
 // Resend a verification code — works for both signup and password-reset flows
 router.get(
   "/resend-otp",
+  otpLimiter,
   wrapAsync(async (req, res) => {
     const { email, purpose } = req.query;
     const validPurpose = purpose === "reset" ? "reset" : "signup";
@@ -147,7 +160,7 @@ router.get("/login", (req, res) => {
   res.render("users/login.ejs");
 });
 
-router.post("/login", saveRedirectUrl, (req, res, next) => {
+router.post("/login", loginLimiter, saveRedirectUrl, (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
     if (err) {
       return next(err);
@@ -224,6 +237,7 @@ router.get("/forgot-password", (req, res) => {
 
 router.post(
   "/forgot-password",
+  otpLimiter,
   wrapAsync(async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
@@ -262,8 +276,16 @@ router.get("/reset-password", (req, res) => {
 
 router.post(
   "/reset-password",
+  otpLimiter,
   wrapAsync(async (req, res) => {
     const { email, otp, newPassword, confirmPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      req.flash("error", "Password must be at least 6 characters.");
+      return req.session.save(() =>
+        res.redirect(`/reset-password?email=${encodeURIComponent(email)}`),
+      );
+    }
 
     if (newPassword !== confirmPassword) {
       req.flash("error", "Passwords do not match.");
@@ -313,6 +335,11 @@ router.post(
   isLoggedIn,
   wrapAsync(async (req, res) => {
     const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      req.flash("error", "New password must be at least 6 characters.");
+      return req.session.save(() => res.redirect("/change-password"));
+    }
 
     if (newPassword !== confirmPassword) {
       req.flash("error", "New passwords do not match.");

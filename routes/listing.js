@@ -7,7 +7,7 @@ const { listingSchema } = require("../schema.js");
 const { isLoggedIn, isOwner } = require("../middleware.js");
 const multer = require("multer");
 const { storage } = require("../cloudConfig.js");
-const upload = multer({ storage });
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } }); // 5MB
 
 const validateListing = (req, res, next) => {
   let { error } = listingSchema.validate(req.body);

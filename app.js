@@ -19,6 +19,8 @@ const userRouter = require("./routes/user.js");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
+const helmet = require("helmet");
+const sanitizeMongo = require("./utils/sanitizeMongo.js");
 
 const dbUrl = process.env.ATLASDB_URL;
 
@@ -67,7 +69,20 @@ process.on("uncaughtException", (err) => {
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+
+// Security headers. contentSecurityPolicy is off because this app loads
+// Bootstrap/Leaflet/fonts from several CDNs — enabling CSP blind (without
+// explicitly allowing each of those domains) would break the site.
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  }),
+);
+
 app.use(express.urlencoded({ extended: true }));
+// Strips MongoDB operator keys ($gt, $ne, etc.) from req.body/query/params
+// so form fields can never be crafted into query operators.
+app.use(sanitizeMongo);
 app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
@@ -168,7 +183,24 @@ app.use((err, req, res, next) => {
     err.statusCode = 400;
     err.message = "Invalid listing/review ID.";
   }
-  let { statusCode = 500, message = "Something went wrong!" } = err;
+  if (err.code === "LIMIT_FILE_SIZE") {
+    err.statusCode = 400;
+    err.message = "That file is too large — please upload something under 5MB.";
+  }
+
+  let statusCode = err.statusCode || 500;
+  let message;
+
+  if (err instanceof ExpressError || statusCode < 500) {
+    // A deliberate, known error we threw ourselves (or a 4xx we set
+    // intentionally) — safe to show its message directly.
+    message = err.message || "Something went wrong!";
+  } else {
+    // An unexpected error — log full detail server-side, but never send
+    // raw internals (file paths, driver errors, etc.) to the client.
+    console.log("Unexpected error:", err);
+    message = "Something went wrong on our end. Please try again.";
+  }
 
   // Safety net: if this error occurred before the currUser-setting
   // middleware ran, make sure the error page can still render without
